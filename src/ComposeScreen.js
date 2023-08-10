@@ -7,6 +7,10 @@ import { storeData } from './store';
 const ComposeScreen = ({ navigation }) => {
     const [title, onChangeTitle] = useState();
     const [content, onChangeContent] = useState();
+    const onPressStoreDate = (title, content, createdAt) => {
+      storeData(title, content, createdAt);
+      navigation.navigate('Home');
+    }
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Text>タイトルを入力してください</Text>
@@ -22,7 +26,7 @@ const ComposeScreen = ({ navigation }) => {
             value = {content}
         />
         <Button
-          onPress={() => storeData(title, content, 1691644149240)}
+          onPress={() => onPressStoreDate(title, content, Date.now())}
           title="作成"
         />
       </View>
