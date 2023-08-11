@@ -1,14 +1,15 @@
 import { Button, View, TextInput, StyleSheet, Text} from 'react-native';
 import { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { storeItem } from './store';
+import { mergeItem } from './store';
 
 
-const ComposeScreen = ({ navigation }) => {
-    const [title, onChangeTitle] = useState();
-    const [content, onChangeContent] = useState();
-    const onPressStoreItem = (title, content, createdAt) => {
-      storeItem(title, content, createdAt);
+const EditScreen = ({ route, navigation }) => {
+    const item = route.params;
+    const [title, onChangeTitle] = useState(item.title);
+    const [content, onChangeContent] = useState(item.content);
+    const onPressMergeItem = (title, content, createdAt) => {
+      mergeItem(title, content, createdAt);
       navigation.navigate('Home');
     }
     return (
@@ -26,8 +27,8 @@ const ComposeScreen = ({ navigation }) => {
             value = {content}
         />
         <Button
-          onPress={() => onPressStoreItem(title, content, Date.now())}
-          title="作成"
+          onPress={() => onPressMergeItem(title, content, item.createdAt)}
+          title="更新"
         />
       </View>
     );
@@ -43,4 +44,4 @@ const ComposeScreen = ({ navigation }) => {
     },
   });
 
-  export default ComposeScreen
+  export default EditScreen

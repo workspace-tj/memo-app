@@ -5,6 +5,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from './src/HomeScreen';
 import ComposeScreen from './src/ComposeScreen';
+import EditScreen from './src/EditScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -14,6 +15,7 @@ export default function App() {
       <Drawer.Navigator initialRouteName="Home">
         <Drawer.Screen name="Home" component={HomeScreen} />
         <Drawer.Screen name="Compose" component={ComposeScreen} options={{title: "作成"}}/>
+        <Drawer.Screen name="Edit" component={EditScreen} options={{title: "編集"}}/>
       </Drawer.Navigator>
     </NavigationContainer>
   );

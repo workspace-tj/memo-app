@@ -1,11 +1,11 @@
-import { Button, View, FlatList, StyleSheet, Text } from 'react-native';
+import { Button, View, FlatList, StyleSheet, Text, Alert} from 'react-native';
 import format from 'date-fns/format';
 import { FAB, IconButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { getAllItems, removeValue } from './store';
 
-const Item = ({ title, content, formattedCreatedAt, createdAt, onPress }) => (
+const Item = ({ title, content, formattedCreatedAt, createdAt, navigation}) => (
   <View style={styles.ItemWrapper}>
     <View style={styles.rowWrapper}>
       <Text style={styles.text}>{title}</Text>
@@ -13,25 +13,26 @@ const Item = ({ title, content, formattedCreatedAt, createdAt, onPress }) => (
         <IconButton
         icon="border-color"
         size={15}
+        onPress={() => createTwoButtonAlert(`メモの編集`,`${formattedCreatedAt}のメモを編集しますか`, () => onPressMergeItems({navigation}, {title, content, createdAt}))}
         />
         <IconButton
         icon="delete"
         size={15}
-        // onPress={() => {removeValue(createdAt).then(() => {onPress})}}
+        onPress={() => createTwoButtonAlert(`メモの削除`,`${formattedCreatedAt}のメモを削除しますか`, () => removeValue(createdAt, {navigation}))}
         />
       </View>
     </View>
     <Text style={styles.text}>{content}</Text>
     <Text style={styles.createdAt}>{formattedCreatedAt}</Text>
   </View>
-)
+);
 
 const HomeScreen = ({ navigation }) => {
-  const [memo, setMemo] = useState();
-  const [reloadFlag, setReloadFlag] = useState(false);
-  const handleReload = () => {
-    setReloadFlag(!reloadFlag); // toggle the flag to trigger a re-render
-  };
+  const [memo, setMemo] = useState({title: "example", content: "HelloWorld", createdAt: Date.now()});
+  // const [reloadFlag, setReloadFlag] = useState(false);
+  // const handleReload = () => {
+  //   setReloadFlag(!reloadFlag); // toggle the flag to trigger a re-render
+  // };
   
   useEffect(() => {
     const set = () => {
@@ -64,7 +65,7 @@ const HomeScreen = ({ navigation }) => {
       />
       <FlatList
         data={memo}
-        renderItem={({ item }) => <Item title={item.title} content={item.content} formattedCreatedAt={format(item.createdAt, 'yyyy/MM/dd hh:mm')} createdAt={item.createdAt} onPress={handleReload} />}
+        renderItem={({ item }) => <Item title={item.title} content={item.content} formattedCreatedAt={format(item.createdAt, 'yyyy/MM/dd hh:mm')} createdAt={item.createdAt} navigation={navigation}/>}
         keyExtractor={item => item.createdAt}
       />
       <FAB
@@ -105,10 +106,27 @@ const HomeScreen = ({ navigation }) => {
     </View>
   );
 };
-const returnA = () => {
-  const a = ["b", "c"]
-  return a
+
+const createTwoButtonAlert = (title, message, onpress) =>
+Alert.alert(title, message, [
+  {
+    text: 'いいえ',
+    onPress: () => console.log('Cancel Pressed'),
+    style: 'cancel',
+  },
+  {text: 'はい', onPress: onpress},
+]);
+
+const onPressMergeItems = ({navigation}, value) => {
+  navigation.navigate('Edit', value)
+  console.log(value);
 }
+
+
+// const returnA = () => {
+//   const a = ["b", "c"]
+//   return a
+// }
 const storeData = async (value) => {
   try {
     const jsonValue = JSON.stringify(value);
