@@ -1,96 +1,45 @@
-import { Button, View, FlatList, StyleSheet, Text, Alert} from 'react-native';
+import { Button, View, FlatList, StyleSheet, Text, Alert } from 'react-native';
 import format from 'date-fns/format';
 import { FAB, IconButton } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { getAllItems, removeAll, removeValue } from './store';
 
-const Item = ({ title, content, createdAt, navigation}) => (
-  <View style={styles.ItemWrapper}>
-    <View style={styles.rowWrapper}>
-      <Text style={styles.text}>{title}</Text>
-      <View style={styles.deleteBtn}>
-        <IconButton
-        icon="border-color"
-        size={15}
-        onPress={() => createTwoButtonAlert(`メモの編集`,`${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({navigation}, {title, content, createdAt}))}
-        />
-        <IconButton
-        icon="delete"
-        size={15}
-        onPress={() => createTwoButtonAlert(`メモの削除`,`${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, {navigation}))}
-        />
-      </View>
-    </View>
-    <Text style={styles.text}>{content}</Text>
-    <Text style={styles.createdAt}>{`作成日：${format(createdAt, 'yyyy/MM/dd hh:mm')}`}</Text>
-  </View>
-);
-const EditedItem = ({ title, content, createdAt, navigation, editedAt}) => (
-  <View style={styles.ItemWrapper}>
-    <View style={styles.rowWrapper}>
-      <Text style={styles.text}>{title}</Text>
-      <View style={styles.deleteBtn}>
-        <IconButton
-        icon="border-color"
-        size={15}
-        onPress={() => createTwoButtonAlert(`メモの編集`,`${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({navigation}, {title, content, createdAt}))}
-        />
-        <IconButton
-        icon="delete"
-        size={15}
-        onPress={() => createTwoButtonAlert(`メモの削除`,`${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, {navigation}))}
-        />
-      </View>
-    </View>
-    <Text style={styles.text}>{content}</Text>
-    <Text style={styles.createdAt}>{`更新日：${format(editedAt, 'yyyy/MM/dd hh:mm')}`}</Text>
-  </View>
-);
-
 const HomeScreen = ({ navigation }) => {
-  const [memo, setMemo] = useState({title: "example", content: "HelloWorld", createdAt: Date.now()});
-  // const [reloadFlag, setReloadFlag] = useState(false);
-  // const handleReload = () => {
-  //   setReloadFlag(!reloadFlag); // toggle the flag to trigger a re-render
-  // };
-  
+  const [memo, setMemo] = useState({ title: "example", content: "HelloWorld", createdAt: Date.now() });
   useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={styles.headerBtn}>
+          <IconButton
+            icon="delete"
+            onPress={() => createTwoButtonAlert("全削除", "メモを全て削除しますか？", () => removeAll({ navigation }))}
+          />
+          <IconButton
+            icon="plus"
+            onPress={() => navigation.navigate('Compose')}
+          />
+        </View>
+      ),
+    })
     const set = () => {
       getAllItems().then((value) => {
         setMemo(value);
       })
-    console.log(memo)
-  }
+    }
     
-    const unsubscribe = navigation.addListener('focus',set)
-
+    const unsubscribe = navigation.addListener('focus', set)
+    
     return unsubscribe;
   }, [navigation]);
-  // useEffect(() => {
-  //   const set = () => {
-  //     const value = arrayArrange();
-  //     setMemo(value);
-  //   console.log(memo)
-  // }
-    
-  //   const unsubscribe = navigation.addListener('focus',set)
-
-  //   return unsubscribe;
-  // }, [navigation]);
   const renderItem = ({ item }) => {
     if (item.editedAt == null) {
-        return  <Item title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation}/>
-      } else {
-        return  <EditedItem title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} editedAt={item.editedAt}/>
-      }
-    } 
+      return <Item title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} />
+    } else {
+      return <EditedItem title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} editedAt={item.editedAt} />
+    }
+  }
   return (
     <View style={styles.container}>
-      <Button
-        onPress={() => navigation.navigate('Compose')}
-        title="Go to Compose"
-      />
       <FlatList
         data={memo}
         renderItem={renderItem}
@@ -101,34 +50,6 @@ const HomeScreen = ({ navigation }) => {
         style={styles.fab}
         onPress={() => navigation.navigate('Compose')}
       />
-      <Button
-        title='store'
-        onPress={() => storeData(memos)}
-      />
-      <Button
-        title='get'
-        onPress={() => getData()}
-      />
-      <Button
-        title='remove'
-        onPress={() => removeAll()}
-      />
-      <Button
-        title='getAllKey'
-        onPress={() => handleReload()}
-      />
-      {/* <Button
-        title='getAllItems'
-        onPress={() => useNavigation().replace('home')}
-      /> */}
-      <IconButton
-        icon="delete"
-        onPress={() => createTwoButtonAlert("全削除","メモを全て削除しますか？", () => removeAll({navigation}))}
-      />
-      {/* <Button
-          title='getAllItems'
-          onPress={ () => console.log(abc())} */}
-      {/* /> */}
     </View>
   );
 };
@@ -140,107 +61,55 @@ Alert.alert(title, message, [
     onPress: () => console.log('Cancel Pressed'),
     style: 'cancel',
   },
-  {text: 'はい', onPress: onpress},
+  { text: 'はい', onPress: onpress },
 ]);
 
-const onPressMergeItems = ({navigation}, value) => {
-  navigation.navigate('Edit', value)
-  console.log(value);
-}
-
-
-// const returnA = () => {
-//   const a = ["b", "c"]
-//   return a
-// }
-const storeData = async (value) => {
-  try {
-    const jsonValue = JSON.stringify(value);
-    console.log(jsonValue);
-    const key = `memos`
-    console.log(key);
-    await AsyncStorage.setItem(key, jsonValue);
-  } catch (e) {
-    console.log(e);
-  }
+const onPressMergeItems = ({ navigation }, value) => {
+  navigation.navigate('Edit', value);
 };
 
-const getData = async () => {
-  try {
-    console.log(`${memos[0].createdAt}`)
-    const jsonValue = await AsyncStorage.getItem(`1691644149240`);
-    console.log(jsonValue != null ? JSON.parse(jsonValue) : null);
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-// const removeAll = async () => {
-//   let keys = []
-//   try {
-//     keys = await AsyncStorage.getAllKeys();
-//     await AsyncStorage.multiRemove(keys)
-//   } catch (e) {
-//     console.log(e);
-//   }
-
-//   console.log('Done.')
-// }
-
-
-// const getAllKeys = async () => {
-//   let keys = []
-//   try {
-//     keys = await AsyncStorage.getAllKeys()
-//   } catch (e) {
-//     console.log(e);
-//   }
-//   return (keys);
-  // console.log(keys)
-  // example console.log result:
-  // ['@MyApp_user', '@MyApp_key']
-// }
-
-
-
-// const arrayArrange = () => {
-//   getAllItems().then(jsonValues => {
-//     const v = jsonValues
-//     console.log(v);
-//     const values = JSON.parse(v);
-//     const value = values.map((i) => {return i[1]});
-//     console.log(value);
-//     return value; 
-//   })
-// }
-
-const memos = [
-  {
-    title: "a",
-    content: "Hello",
-    createdAt: 1691634631914,
-  },
-  {
-    title: "b",
-    content: "Good Evening",
-    createdAt: 1691634653971,
-  },
-  {
-    title: "c",
-    content: "GoodMorning",
-    createdAt: 1691634721637,
-  },
-  {
-    title: "d",
-    content: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    createdAt: 1691634746457,
-  },
-  {
-    title: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-    content: "cccccccccccccccccccccccccccccccccccccc",
-    createdAt: 1691634792560
-  },
-]
+const Item = ({ title, content, createdAt, navigation }) => (
+  <View style={styles.ItemWrapper}>
+    <View style={styles.rowWrapper}>
+      <Text style={styles.text}>{title}</Text>
+      <View style={styles.deleteBtn}>
+        <IconButton
+          icon="border-color"
+          size={15}
+          onPress={() => createTwoButtonAlert(`メモの編集`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({ navigation }, { title, content, createdAt }))}
+        />
+        <IconButton
+          icon="delete"
+          size={15}
+          onPress={() => createTwoButtonAlert(`メモの削除`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
+        />
+      </View>
+    </View>
+    <Text style={styles.text}>{content}</Text>
+    <Text style={styles.createdAt}>{`作成日：${format(createdAt, 'yyyy/MM/dd hh:mm')}`}</Text>
+  </View>
+);
+const EditedItem = ({ title, content, createdAt, navigation, editedAt }) => (
+  <View style={styles.ItemWrapper}>
+    <View style={styles.rowWrapper}>
+      <Text style={styles.text}>{title}</Text>
+      <View style={styles.deleteBtn}>
+        <IconButton
+          icon="border-color"
+          size={15}
+          onPress={() => createTwoButtonAlert(`メモの編集`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({ navigation }, { title, content, createdAt }))}
+        />
+        <IconButton
+          icon="delete"
+          size={15}
+          onPress={() => createTwoButtonAlert(`メモの削除`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
+        />
+      </View>
+    </View>
+    <Text style={styles.text}>{content}</Text>
+    <Text style={styles.createdAt}>{`更新日：${format(editedAt, 'yyyy/MM/dd hh:mm')}`}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -260,15 +129,17 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
   deleteBtn: {
-    // direction:'rtl',
     flexDirection: 'row',
     position: 'absolute',
     right: 3,
     top: 0,
   },
-  rowWrapper:{
+  rowWrapper: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  headerBtn: {
+    flexDirection: 'row',
   }
 });
 
