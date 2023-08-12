@@ -5,22 +5,22 @@ import { useEffect, useState } from 'react';
 import { getAllItems, removeAll, removeValue } from './store';
 
 const HomeScreen = ({ navigation }) => {
-  navigation.setOptions({
-    headerRight: () => (
-      <View style={styles.headerBtn}>
-        <IconButton
-          icon="delete"
-          onPress={() => createTwoButtonAlert("全削除", "メモを全て削除しますか？", () => removeAll({ navigation }))}
-        />
-        <IconButton
-          icon="plus"
-          onPress={() => navigation.navigate('Compose')}
-        />
-      </View>
-    ),
-  })
   const [memo, setMemo] = useState({ title: "example", content: "HelloWorld", createdAt: Date.now() });
   useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={styles.headerBtn}>
+          <IconButton
+            icon="delete"
+            onPress={() => createTwoButtonAlert("全削除", "メモを全て削除しますか？", () => removeAll({ navigation }))}
+          />
+          <IconButton
+            icon="plus"
+            onPress={() => navigation.navigate('Compose')}
+          />
+        </View>
+      ),
+    })
     const set = () => {
       getAllItems().then((value) => {
         setMemo(value);
