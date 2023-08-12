@@ -38,15 +38,30 @@ const storeItem = async (title, content, createdAt) => {
       console.log(e)
     }
     console.log('Done.');
-    await navigation.navigate('Home');
+    await navigation.navigate('Compose');
+    await navigation.navigate('Home')
+  };
+  
+  const removeAll = async ({navigation}) => {
+    let keys = []
+    try {
+      keys = await AsyncStorage.getAllKeys();
+      await AsyncStorage.multiRemove(keys)
+    } catch (e) {
+      console.log(e);
+    }
+    console.log('Done.');
+    await navigation.navigate('Compose');
+    await navigation.navigate('Home')
   }
 
-  const mergeItem = async (title, content, createdAt) => {
+  const mergeItem = async (title, content, createdAt, editedAt) => {
     try {
         const value = {
             title,
             content,
             createdAt,
+            editedAt,
         }
       const jsonValue = JSON.stringify(value);
       // console.log(jsonValue);
@@ -58,4 +73,4 @@ const storeItem = async (title, content, createdAt) => {
     }
   };
 
-  export {storeItem, getAllItems, removeValue, mergeItem};
+  export {storeItem, getAllItems, removeValue, removeAll, mergeItem};

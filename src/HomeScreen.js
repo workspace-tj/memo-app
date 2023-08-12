@@ -3,9 +3,9 @@ import format from 'date-fns/format';
 import { FAB, IconButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { getAllItems, removeValue } from './store';
+import { getAllItems, removeAll, removeValue } from './store';
 
-const Item = ({ title, content, formattedCreatedAt, createdAt, navigation}) => (
+const Item = ({ title, content, createdAt, navigation}) => (
   <View style={styles.ItemWrapper}>
     <View style={styles.rowWrapper}>
       <Text style={styles.text}>{title}</Text>
@@ -13,17 +13,38 @@ const Item = ({ title, content, formattedCreatedAt, createdAt, navigation}) => (
         <IconButton
         icon="border-color"
         size={15}
-        onPress={() => createTwoButtonAlert(`メモの編集`,`${formattedCreatedAt}のメモを編集しますか`, () => onPressMergeItems({navigation}, {title, content, createdAt}))}
+        onPress={() => createTwoButtonAlert(`メモの編集`,`${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({navigation}, {title, content, createdAt}))}
         />
         <IconButton
         icon="delete"
         size={15}
-        onPress={() => createTwoButtonAlert(`メモの削除`,`${formattedCreatedAt}のメモを削除しますか`, () => removeValue(createdAt, {navigation}))}
+        onPress={() => createTwoButtonAlert(`メモの削除`,`${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, {navigation}))}
         />
       </View>
     </View>
     <Text style={styles.text}>{content}</Text>
-    <Text style={styles.createdAt}>{formattedCreatedAt}</Text>
+    <Text style={styles.createdAt}>{`作成日：${format(createdAt, 'yyyy/MM/dd hh:mm')}`}</Text>
+  </View>
+);
+const EditedItem = ({ title, content, createdAt, navigation, editedAt}) => (
+  <View style={styles.ItemWrapper}>
+    <View style={styles.rowWrapper}>
+      <Text style={styles.text}>{title}</Text>
+      <View style={styles.deleteBtn}>
+        <IconButton
+        icon="border-color"
+        size={15}
+        onPress={() => createTwoButtonAlert(`メモの編集`,`${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({navigation}, {title, content, createdAt}))}
+        />
+        <IconButton
+        icon="delete"
+        size={15}
+        onPress={() => createTwoButtonAlert(`メモの削除`,`${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, {navigation}))}
+        />
+      </View>
+    </View>
+    <Text style={styles.text}>{content}</Text>
+    <Text style={styles.createdAt}>{`更新日：${format(editedAt, 'yyyy/MM/dd hh:mm')}`}</Text>
   </View>
 );
 
@@ -57,6 +78,13 @@ const HomeScreen = ({ navigation }) => {
 
   //   return unsubscribe;
   // }, [navigation]);
+  const renderItem = ({ item }) => {
+    if (item.editedAt == null) {
+        return  <Item title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation}/>
+      } else {
+        return  <EditedItem title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} editedAt={item.editedAt}/>
+      }
+    } 
   return (
     <View style={styles.container}>
       <Button
@@ -65,7 +93,7 @@ const HomeScreen = ({ navigation }) => {
       />
       <FlatList
         data={memo}
-        renderItem={({ item }) => <Item title={item.title} content={item.content} formattedCreatedAt={format(item.createdAt, 'yyyy/MM/dd hh:mm')} createdAt={item.createdAt} navigation={navigation}/>}
+        renderItem={renderItem}
         keyExtractor={item => item.createdAt}
       />
       <FAB
@@ -95,9 +123,7 @@ const HomeScreen = ({ navigation }) => {
       /> */}
       <IconButton
         icon="delete"
-        onPress={() => getMultiple().then(value => {
-          console.log(value)
-        })}
+        onPress={() => createTwoButtonAlert("全削除","メモを全て削除しますか？", () => removeAll({navigation}))}
       />
       {/* <Button
           title='getAllItems'
@@ -149,17 +175,17 @@ const getData = async () => {
   }
 };
 
-const removeAll = async () => {
-  let keys = []
-  try {
-    keys = await AsyncStorage.getAllKeys();
-    await AsyncStorage.multiRemove(keys)
-  } catch (e) {
-    console.log(e);
-  }
+// const removeAll = async () => {
+//   let keys = []
+//   try {
+//     keys = await AsyncStorage.getAllKeys();
+//     await AsyncStorage.multiRemove(keys)
+//   } catch (e) {
+//     console.log(e);
+//   }
 
-  console.log('Done.')
-}
+//   console.log('Done.')
+// }
 
 
 // const getAllKeys = async () => {
