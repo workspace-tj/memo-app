@@ -1,4 +1,4 @@
-import { Button, View, FlatList, StyleSheet, Text, Alert } from 'react-native';
+import { Button, View, FlatList, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
 import format from 'date-fns/format';
 import { FAB, IconButton } from 'react-native-paper';
 import { useEffect, useState } from 'react';
@@ -64,50 +64,60 @@ Alert.alert(title, message, [
   { text: 'はい', onPress: onpress },
 ]);
 
-const onPressMergeItems = ({ navigation }, value) => {
+const onPressToEdit = ({ navigation }, value) => {
   navigation.navigate('Edit', value);
 };
 
+const onPressMergeItem = (title, content, createdAt, editedAt) => {
+  mergeItem(title, content, createdAt, editedAt);
+  navigation.navigate('Edit');
+  navigation.navigate('Home');
+}
+
 const Item = ({ title, content, createdAt, navigation }) => (
   <View style={styles.ItemWrapper}>
+    <TouchableOpacity onPress={() => onPressToEdit({ navigation }, { title, content, createdAt })}>
     <View style={styles.rowWrapper}>
-      <Text style={styles.text}>{title}</Text>
-      <View style={styles.deleteBtn}>
-        <IconButton
-          icon="border-color"
-          size={15}
-          onPress={() => createTwoButtonAlert(`メモの編集`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({ navigation }, { title, content, createdAt }))}
-        />
-        <IconButton
-          icon="delete"
-          size={15}
-          onPress={() => createTwoButtonAlert(`メモの削除`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
-        />
+      <Text style={styles.titleText} numberOfLines={1}>{title}</Text>
+        <View style={styles.deleteBtn}>
+          <IconButton
+            icon="border-color"
+            size={15}
+            onPress={() => createTwoButtonAlert(`メモの編集`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressToEdit({ navigation }, { title, content, createdAt }))}
+            />
+          <IconButton
+            icon="delete"
+            size={15}
+            onPress={() => createTwoButtonAlert(`メモの削除`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
+            />
+        </View>
       </View>
-    </View>
-    <Text style={styles.text}>{content}</Text>
-    <Text style={styles.createdAt}>{`作成日：${format(createdAt, 'yyyy/MM/dd hh:mm')}`}</Text>
+      <Text style={styles.text} numberOfLines={5}>{content}</Text>
+      <Text style={styles.createdAt}>{`作成日：${format(createdAt, 'yyyy/MM/dd hh:mm')}`}</Text>
+    </TouchableOpacity>
   </View>
 );
 const EditedItem = ({ title, content, createdAt, navigation, editedAt }) => (
   <View style={styles.ItemWrapper}>
-    <View style={styles.rowWrapper}>
-      <Text style={styles.text}>{title}</Text>
-      <View style={styles.deleteBtn}>
-        <IconButton
-          icon="border-color"
-          size={15}
-          onPress={() => createTwoButtonAlert(`メモの編集`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressMergeItems({ navigation }, { title, content, createdAt }))}
-        />
-        <IconButton
-          icon="delete"
-          size={15}
-          onPress={() => createTwoButtonAlert(`メモの削除`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
-        />
+    <TouchableOpacity onPress={() => onPressToEdit({ navigation }, { title, content, createdAt })}>
+      <View style={styles.rowWrapper}>
+        <Text style={styles.titleText} numberOfLines={1}>{title}</Text>
+        <View style={styles.deleteBtn}>
+          <IconButton
+            icon="border-color"
+            size={15}
+            onPress={() => createTwoButtonAlert(`メモの編集`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを編集しますか`, () => onPressToEdit({ navigation }, { title, content, createdAt }))}
+            />
+          <IconButton
+            icon="delete"
+            size={15}
+            onPress={() => createTwoButtonAlert(`メモの削除`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
+            />
+        </View>
       </View>
-    </View>
-    <Text style={styles.text}>{content}</Text>
-    <Text style={styles.createdAt}>{`更新日：${format(editedAt, 'yyyy/MM/dd hh:mm')}`}</Text>
+      <Text style={styles.text} numberOfLines={5}>{content}</Text>
+      <Text style={styles.createdAt}>{`更新日：${format(editedAt, 'yyyy/MM/dd hh:mm')}`}</Text>
+    </TouchableOpacity>
   </View>
 );
 
@@ -117,11 +127,15 @@ const styles = StyleSheet.create({
     align: 'center',
   },
   ItemWrapper: {
+    alignSelf: 'center',
     width: '95%',
     padding: 10,
+    borderBottomColor: 'Black',
+    borderBottomWidth: 0.3,
   },
   createdAt: {
     textAlign: 'right',
+    fontSize: 12,
   },
   fab: {
     position: 'absolute',
@@ -130,9 +144,6 @@ const styles = StyleSheet.create({
   },
   deleteBtn: {
     flexDirection: 'row',
-    position: 'absolute',
-    right: 3,
-    top: 0,
   },
   rowWrapper: {
     flexDirection: 'row',
@@ -140,6 +151,13 @@ const styles = StyleSheet.create({
   },
   headerBtn: {
     flexDirection: 'row',
+  },
+  text: {
+    flex: 1,
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: '400',
   }
 });
 
