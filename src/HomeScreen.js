@@ -3,9 +3,13 @@ import format from 'date-fns/format';
 import { FAB, IconButton } from 'react-native-paper';
 import { useEffect, useState } from 'react';
 import { getAllItems, removeAll, removeValue } from './store';
+import DraggableFlatList, {
+  ScaleDecorator,
+  RenderItemParams,
+} from "react-native-draggable-flatlist";
 
 const HomeScreen = ({ navigation }) => {
-  const [memo, setMemo] = useState({ title: "example", content: "HelloWorld", createdAt: Date.now() });
+  const [memo, setMemo] = useState([]);
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -31,20 +35,44 @@ const HomeScreen = ({ navigation }) => {
     
     return unsubscribe;
   }, [navigation]);
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item, drag }) => {
     if (item.editedAt == null) {
-      return <Item title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} />
+      return <Item title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} drag={drag}/>
     } else {
-      return <EditedItem title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} editedAt={item.editedAt} />
+      return <EditedItem title={item.title} content={item.content} createdAt={item.createdAt} navigation={navigation} editedAt={item.editedAt} drag={drag}/>
     }
   }
+  // const renderDragItem = ({ item, drag}) => {
+  //   return (
+
+  //       <TouchableOpacity
+  //         activeOpacity={1}
+  //         onLongPress={drag}
+  //         // disabled={isActive}
+  //         // style={[
+  //         //   styles.rowItem,
+  //         //   { backgroundColor: isActive ? "red" : item.backgroundColor },
+  //         // ]}
+  //       >
+  //         <Text style={styles.text}>{item.createdAt}</Text>
+  //       </TouchableOpacity>
+  //   );
+  // };
   return (
     <View style={styles.container}>
-      <FlatList
+      {/* <FlatList
         data={memo}
         renderItem={renderItem}
         keyExtractor={item => item.createdAt}
-      />
+      /> */}
+      <DraggableFlatList
+      data={memo}
+      onDragEnd={({data,from,to}) => {
+        console.log(`${from}から${to}へindexが変わりました。`)
+        setMemo(data)}}
+      keyExtractor={(item) => item.createdAt}
+      renderItem={renderItem}
+    />
       <FAB
         icon="plus"
         style={styles.fab}
@@ -53,6 +81,15 @@ const HomeScreen = ({ navigation }) => {
     </View>
   );
 };
+
+const initialData = [...Array(5)].map((d, index) => {
+  return {
+    key: `item-${index}`,
+    label: String(index) + "",
+    height: 100,
+    width: 60 + Math.random() * 40,
+  };
+});
 
 const createTwoButtonAlert = (title, message, onpress) =>
 Alert.alert(title, message, [
@@ -68,15 +105,15 @@ const onPressToEdit = ({ navigation }, value) => {
   navigation.navigate('Edit', value);
 };
 
-const onPressMergeItem = (title, content, createdAt, editedAt) => {
-  mergeItem(title, content, createdAt, editedAt);
-  navigation.navigate('Edit');
-  navigation.navigate('Home');
-}
+// const onPressMergeItem = (title, content, createdAt, editedAt) => {
+//   mergeItem(title, content, createdAt, editedAt);
+//   navigation.navigate('Edit');
+//   navigation.navigate('Home');
+// }
 
-const Item = ({ title, content, createdAt, navigation }) => (
+const Item = ({ title, content, createdAt, navigation, drag }) => (
   <View style={styles.ItemWrapper}>
-    <TouchableOpacity onPress={() => onPressToEdit({ navigation }, { title, content, createdAt })}>
+    <TouchableOpacity onPress={() => onPressToEdit({ navigation }, { title, content, createdAt })} onLongPress={drag}>
     <View style={styles.rowWrapper}>
       <Text style={styles.titleText} numberOfLines={1}>{title}</Text>
         <View style={styles.deleteBtn}>
@@ -97,9 +134,9 @@ const Item = ({ title, content, createdAt, navigation }) => (
     </TouchableOpacity>
   </View>
 );
-const EditedItem = ({ title, content, createdAt, navigation, editedAt }) => (
+const EditedItem = ({ title, content, createdAt, navigation, editedAt, drag}) => (
   <View style={styles.ItemWrapper}>
-    <TouchableOpacity onPress={() => onPressToEdit({ navigation }, { title, content, createdAt })}>
+    <TouchableOpacity onPress={() => onPressToEdit({ navigation }, { title, content, createdAt })} onLongPress={drag}>
       <View style={styles.rowWrapper}>
         <Text style={styles.titleText} numberOfLines={1}>{title}</Text>
         <View style={styles.deleteBtn}>
