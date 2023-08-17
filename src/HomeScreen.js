@@ -2,7 +2,7 @@ import { Button, View, FlatList, StyleSheet, Text, Alert, TouchableOpacity } fro
 import format from 'date-fns/format';
 import { FAB, IconButton } from 'react-native-paper';
 import { useEffect, useState } from 'react';
-import { getAllItems, removeAll, removeValue } from './store';
+import { getAllItems, removeAll, removeValue, replaceListOrder } from './store';
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
@@ -66,24 +66,34 @@ const HomeScreen = ({ navigation }) => {
         renderItem={renderItem}
         keyExtractor={item => item.createdAt}
       /> */}
-      <DraggableFlatList
-      data={memo}
-      onDragEnd={({data,from,to}) => {
-        console.log(`${from}から${to}へindexが変わりました。`)
-        setMemo(data)
-      }}
-      keyExtractor={(item) => item.createdAt}
-      renderItem={renderItem}
-    />
+      {memo == null ? (
+        // データが存在する場合は DataList を表示
+        <Text>No data available.</Text>
+        ) : (
+          // データが存在しない場合はメッセージを表示
+          <DraggableFlatList
+          data={memo}
+          onDragEnd={({data,from,to}) => {
+            if (from !== to) {
+              console.log(`${from}から${to}へindexが変わりました。`)
+              setMemo(data);
+              replaceListOrder(data, from, to);
+              console.log(`データの中身は${data}`);
+            }
+          }}
+          keyExtractor={(item) => item.index}
+          renderItem={renderItem}
+        />
+      )}
       <FAB
         icon="plus"
         style={styles.fab}
         onPress={() => navigation.navigate('Compose')}
       />
-      <Button title='test' onPress={() => {
+      {/* <Button title='test' onPress={() => {
           getAllItems().then((value) => setMemo(value));
           console.log(memo)
-        }}></Button>
+        }}></Button> */}
     </View>
   );
 };

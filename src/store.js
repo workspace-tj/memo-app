@@ -107,4 +107,25 @@ const mergeItem = async (title, content, createdAt, editedAt) => {
   }
 };
 
-export { storeItem, getAllItems, removeValue, removeAll, mergeItem };
+const replaceListOrder = async (data, from, to) => {
+  const key = 'memos';
+
+  try {
+    const newData = data.map((memo) => {
+      if (memo.index === from + 1) {
+        return { ...memo, index: to + 1 };
+      } else if (from + 1 < memo.index && memo.index <= to + 1) {
+        return { ...memo, index: memo.index - 1 };
+      }
+      return memo;
+    });
+
+    await AsyncStorage.setItem(key, JSON.stringify(newData));
+
+    console.log('Memo order replaced successfully.');
+  } catch (error) {
+    console.log('Error replacing memo order:', error);
+  }
+};
+
+export { storeItem, getAllItems, removeValue, removeAll, mergeItem, replaceListOrder };
