@@ -28,6 +28,7 @@ const HomeScreen = ({ navigation }) => {
     const set = () => {
       getAllItems().then((value) => {
         setMemo(value);
+        console.log(memo)
       })
     }
     
@@ -69,7 +70,8 @@ const HomeScreen = ({ navigation }) => {
       data={memo}
       onDragEnd={({data,from,to}) => {
         console.log(`${from}から${to}へindexが変わりました。`)
-        setMemo(data)}}
+        setMemo(data)
+      }}
       keyExtractor={(item) => item.createdAt}
       renderItem={renderItem}
     />
@@ -78,6 +80,10 @@ const HomeScreen = ({ navigation }) => {
         style={styles.fab}
         onPress={() => navigation.navigate('Compose')}
       />
+      <Button title='test' onPress={() => {
+          getAllItems().then((value) => setMemo(value));
+          console.log(memo)
+        }}></Button>
     </View>
   );
 };

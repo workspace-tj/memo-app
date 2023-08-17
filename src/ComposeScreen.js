@@ -7,8 +7,10 @@ const ComposeScreen = ({ navigation }) => {
   const [title, onChangeTitle] = useState();
   const [content, onChangeContent] = useState();
   const onPressStoreItem = (title, content, createdAt) => {
-    storeItem(title, content, createdAt);
-    navigation.navigate('Home');
+    storeItem(title, content, createdAt).then(() =>
+      navigation.navigate('Home')
+    )
+    // console.log(`title is ${title}, content is ${content}, createdAt is ${createdAt}`)
   }
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
