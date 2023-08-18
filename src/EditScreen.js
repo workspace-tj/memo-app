@@ -8,8 +8,9 @@ const EditScreen = ({ route, navigation }) => {
   const [title, onChangeTitle] = useState(item.title);
   const [content, onChangeContent] = useState(item.content);
   const onPressMergeItem = (title, content, createdAt, editedAt) => {
-    mergeItem(title, content, createdAt, editedAt);
-    navigation.navigate('Home');
+    mergeItem(title, content, createdAt, editedAt).then(() => 
+      navigation.navigate('Home')
+    )
   }
   useEffect(() => {
     const set = () => {

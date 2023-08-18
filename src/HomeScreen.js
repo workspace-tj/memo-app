@@ -2,7 +2,7 @@ import { Button, View, FlatList, StyleSheet, Text, Alert, TouchableOpacity } fro
 import format from 'date-fns/format';
 import { FAB, IconButton } from 'react-native-paper';
 import { useEffect, useState } from 'react';
-import { getAllItems, removeAll, removeValue, replaceListOrder } from './store';
+import { getAllItems, removeAll, removeItemByCreatedAt, removeValue, replaceListOrder } from './store';
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
@@ -28,7 +28,6 @@ const HomeScreen = ({ navigation }) => {
     const set = () => {
       getAllItems().then((value) => {
         setMemo(value);
-        console.log(memo)
       })
     }
     
@@ -67,10 +66,8 @@ const HomeScreen = ({ navigation }) => {
         keyExtractor={item => item.createdAt}
       /> */}
       {memo == null ? (
-        // データが存在する場合は DataList を表示
-        <Text>No data available.</Text>
+        <Text style={styles.notification} adjustsFontSizeToFit={true} numberOfLines={2}>メモがありません。{"\n"}＋を押してメモを作成してください。</Text>
         ) : (
-          // データが存在しない場合はメッセージを表示
           <DraggableFlatList
           data={memo}
           onDragEnd={({data,from,to}) => {
@@ -91,21 +88,14 @@ const HomeScreen = ({ navigation }) => {
         onPress={() => navigation.navigate('Compose')}
       />
       {/* <Button title='test' onPress={() => {
-          getAllItems().then((value) => setMemo(value));
-          console.log(memo)
+          getAllItems().then((value) => {
+            setMemo(value)
+            console.log(memo)
+          });
         }}></Button> */}
     </View>
   );
 };
-
-const initialData = [...Array(5)].map((d, index) => {
-  return {
-    key: `item-${index}`,
-    label: String(index) + "",
-    height: 100,
-    width: 60 + Math.random() * 40,
-  };
-});
 
 const createTwoButtonAlert = (title, message, onpress) =>
 Alert.alert(title, message, [
@@ -141,7 +131,7 @@ const Item = ({ title, content, createdAt, navigation, drag }) => (
           <IconButton
             icon="delete"
             size={15}
-            onPress={() => createTwoButtonAlert(`メモの削除`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
+            onPress={() => createTwoButtonAlert(`メモの削除`, `${format(createdAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeItemByCreatedAt(createdAt, { navigation }))}
             />
         </View>
       </View>
@@ -164,7 +154,7 @@ const EditedItem = ({ title, content, createdAt, navigation, editedAt, drag}) =>
           <IconButton
             icon="delete"
             size={15}
-            onPress={() => createTwoButtonAlert(`メモの削除`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeValue(createdAt, { navigation }))}
+            onPress={() => createTwoButtonAlert(`メモの削除`, `${format(editedAt, 'yyyy/MM/dd hh:mm')}のメモを削除しますか`, () => removeItemByCreatedAt(createdAt, { navigation }))}
             />
         </View>
       </View>
@@ -210,6 +200,11 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 20,
+    fontWeight: '400',
+  },
+  notification: {
+    textAlign: 'center',
+    fontSize:20,
     fontWeight: '400',
   }
 });

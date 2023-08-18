@@ -49,11 +49,19 @@ const getAllItems = async () => {
   }
 };
 
-const removeValue = async (createdAt, { navigation }) => {
+const removeItemByCreatedAt = async (createdAt, {navigation}) => {
+  const key = 'memos';
+
   try {
-    await AsyncStorage.removeItem(`${key}`)
-  } catch (e) {
-    console.log(e)
+    const existingMemos = await AsyncStorage.getItem(key);
+    const memos = existingMemos ? JSON.parse(existingMemos) : [];
+
+    const updatedMemos = memos.filter(memo => memo.createdAt !== createdAt);
+
+    await AsyncStorage.setItem(key, JSON.stringify(updatedMemos));
+    console.log(`Memo with createdAt ${createdAt} removed successfully.`);
+  } catch (error) {
+    console.log(`Error removing memo with createdAt ${createdAt}:`, error);
   }
   await navigation.navigate('Compose');
   await navigation.navigate('Home')
@@ -83,27 +91,29 @@ const removeAll = async ({ navigation }) => {
 }
 
 const mergeItem = async (title, content, createdAt, editedAt) => {
-  let key = 'memos'
+  const key = 'memos';
+  
   try {
     const memos = await AsyncStorage.getItem(key).then((value) => JSON.parse(value));
     
-    const value = {
-      title,
-      content,
-      createdAt,
-      editedAt,
-    }
-    const updateMemo = memos.map((memo) => {
+    const updatedMemos = memos.map((memo) => {
       if (memo.createdAt === createdAt) {
-        return [...memos, value];
+        return {
+          ...memo,
+          title,
+          content,
+          editedAt,
+        };
       }
-      return memo
+      return memo;
     });
     
-    const jsonUpdatedMemos = JSON.stringify(updateMemo)
-    await AsyncStorage.mergeItem(key, jsonUpdatedMemos);
-  } catch (e) {
-    console.log(e);
+    const jsonUpdatedMemos = JSON.stringify(updatedMemos);
+    await AsyncStorage.setItem(key, jsonUpdatedMemos);
+
+    console.log(`Memo with createdAt ${createdAt} merged successfully.`);
+  } catch (error) {
+    console.log(`Error merging memo with createdAt ${createdAt}:`, error);
   }
 };
 
@@ -112,10 +122,18 @@ const replaceListOrder = async (data, from, to) => {
 
   try {
     const newData = data.map((memo) => {
-      if (memo.index === from + 1) {
-        return { ...memo, index: to + 1 };
-      } else if (from + 1 < memo.index && memo.index <= to + 1) {
-        return { ...memo, index: memo.index - 1 };
+      if (from < to) {
+        if (memo.index === from + 1) {
+          return { ...memo, index: to + 1 };
+        } else if (from + 1 < memo.index && memo.index <= to + 1) {
+          return { ...memo, index: memo.index - 1 };
+        }
+      } else {
+        if (memo.index === from + 1) {
+          return { ...memo, index: to + 1 };
+        } else if (to + 1 <= memo.index && memo.index < from + 1) {
+          return { ...memo, index: memo.index + 1 };
+        }
       }
       return memo;
     });
@@ -128,4 +146,4 @@ const replaceListOrder = async (data, from, to) => {
   }
 };
 
-export { storeItem, getAllItems, removeValue, removeAll, mergeItem, replaceListOrder };
+export { storeItem, getAllItems, removeItemByCreatedAt, removeAll, mergeItem, replaceListOrder };
